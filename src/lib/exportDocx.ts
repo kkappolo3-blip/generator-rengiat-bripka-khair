@@ -120,9 +120,9 @@ export async function exportToDocx(entries: DailyEntry[], settings: ExportSettin
     }));
 
     // --- TABEL (tanpa kolom HARI) ---
-    // F4 landscape content width: 18720 - 720 - 720 = 17280 DXA
-    const totalWidth = 17280;
-    const colWidths = [700, 1600, 4500, 3200, 4800, 2480];
+    // F4 portrait content width: 12240 - 720 - 720 = 10800 DXA
+    const totalWidth = 10800;
+    const colWidths = [500, 1300, 3000, 2000, 2800, 1200];
     const headerRow = new TableRow({
       children: [
         createCell("NO", colWidths[0], { bold: true, alignment: AlignmentType.CENTER }),
@@ -221,8 +221,8 @@ export async function exportToDocx(entries: DailyEntry[], settings: ExportSettin
     sections: [{
       properties: {
         page: {
-          // F4 landscape: 8.5" x 13" → 12240 x 18720 DXA
-          size: { width: 12240, height: 18720, orientation: undefined },
+          // F4 portrait: 8.5" x 13" → 12240 x 18720 DXA
+          size: { width: 12240, height: 18720 },
           margin: { top: 720, right: 720, bottom: 720, left: 720 },
         },
       },
