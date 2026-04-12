@@ -88,7 +88,7 @@ function Index() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-foreground">Generator Laporan Kegiatan Harian</h1>
-              <p className="text-sm text-muted-foreground">Bhabinkamtibmas — Otomatis & Cepat</p>
+              <p className="text-sm text-muted-foreground">MOHAMAD KHAIR PUNYA APLIKASI - Otomatis & Cepat</p>
             </div>
           </div>
         </div>
