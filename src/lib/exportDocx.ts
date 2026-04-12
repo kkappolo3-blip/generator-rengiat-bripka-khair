@@ -15,8 +15,19 @@ const BULAN_NAMES = [
   "Juli", "Agustus", "September", "Oktober", "November", "Desember",
 ];
 
+const HARI_NAMES = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+
 function formatTanggal(d: Date): string {
   return `${d.getDate()} ${BULAN_NAMES[d.getMonth() + 1]} ${d.getFullYear()}`;
+}
+
+function getWeekOfMonth(d: Date): number {
+  const firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
+  const dayOfMonth = d.getDate();
+  const firstDayOfWeek = firstDay.getDay();
+  // Adjust so Monday = 0
+  const adjustedFirst = (firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1);
+  return Math.ceil((dayOfMonth + adjustedFirst) / 7);
 }
 
 export async function exportToDocx(entries: DailyEntry[], settings: ExportSettings) {
@@ -27,13 +38,15 @@ export async function exportToDocx(entries: DailyEntry[], settings: ExportSettin
 
   const cellBorder = { style: BorderStyle.SINGLE, size: 1, color: "000000" };
   const borders = { top: cellBorder, bottom: cellBorder, left: cellBorder, right: cellBorder };
+  const noBorder = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
+  const noBorders = { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder };
 
   function createCell(text: string, width: number, opts?: { bold?: boolean; alignment?: (typeof AlignmentType)["CENTER"] }) {
     return new TableCell({
       borders,
       width: { size: width, type: WidthType.DXA },
       children: [new Paragraph({
-        alignment: opts?.alignment || AlignmentType.LEFT,
+        alignment: opts?.alignment || AlignmentType.JUSTIFIED,
         spacing: { before: 40, after: 40 },
         children: [new TextRun({ text, size: 20, font: "Arial", bold: opts?.bold })],
       })],
@@ -41,83 +54,134 @@ export async function exportToDocx(entries: DailyEntry[], settings: ExportSettin
   }
 
   function buildPage(entry: DailyEntry, isLast: boolean) {
-    const elements: (typeof Paragraph extends new (...args: infer _) => infer R ? R : never)[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const elements: any[] = [];
 
+    // --- KOP SURAT: Left-aligned with underline on longest text ---
     const kopLines = [
       "KEPOLISIAN NEGARA REPUBLIK INDONESIA",
       `RESOR ${settings.resor}`,
       `SEKTOR ${settings.sektor}`,
     ];
-    for (const line of kopLines) {
+
+    // Build kop as left-aligned paragraphs
+    for (let i = 0; i < kopLines.length; i++) {
+      const isLastKop = i === kopLines.length - 1;
       elements.push(new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 40 },
-        children: [new TextRun({ text: line, bold: true, size: 24, font: "Arial" })],
+        alignment: AlignmentType.LEFT,
+        spacing: { after: isLastKop ? 0 : 40 },
+        border: isLastKop ? {
+          bottom: { style: BorderStyle.SINGLE, size: 6, color: "000000", space: 1 },
+        } : undefined,
+        children: [new TextRun({ text: kopLines[i], bold: true, size: 24, font: "Arial" })],
       }));
     }
 
     elements.push(new Paragraph({ spacing: { after: 120 }, children: [] }));
 
+    // --- JUDUL ---
     elements.push(new Paragraph({
       alignment: AlignmentType.CENTER,
-      spacing: { after: 200 },
+      spacing: { after: 60 },
       children: [new TextRun({
-        text: `RENCANA KEGIATAN HARIAN ${settings.unitKerja}`,
+        text: `RENCANA KEGIATAN ${settings.unitKerja}`,
         bold: true, underline: {}, size: 24, font: "Arial",
       })],
     }));
 
+    // --- Hari/Tanggal & Minggu Ke ---
+    const hari = HARI_NAMES[entry.tanggal.getDay()];
+    const tanggalFormatted = `${String(entry.tanggal.getDate()).padStart(2, "0")} ${BULAN_NAMES[entry.tanggal.getMonth() + 1]} ${entry.tanggal.getFullYear()}`;
+    const mingguKe = getWeekOfMonth(entry.tanggal);
+
+    elements.push(new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 200 },
+      children: [new TextRun({
+        text: `Hari/Tanggal : ${hari}, ${tanggalFormatted}, Minggu Ke - ${mingguKe}`,
+        italics: true, size: 22, font: "Arial",
+      })],
+    }));
+
+    // --- TABEL (tanpa kolom HARI) ---
+    const colWidths = [600, 1400, 2800, 2200, 2400, 1200];
     const headerRow = new TableRow({
       children: [
-        createCell("NO", 600, { bold: true, alignment: AlignmentType.CENTER }),
-        createCell("JAM", 1200, { bold: true, alignment: AlignmentType.CENTER }),
-        createCell("HARI", 1000, { bold: true, alignment: AlignmentType.CENTER }),
-        createCell("BENTUK KEGIATAN", 2400, { bold: true, alignment: AlignmentType.CENTER }),
-        createCell("SASARAN", 1800, { bold: true, alignment: AlignmentType.CENTER }),
-        createCell("HASIL YANG DICAPAI", 2200, { bold: true, alignment: AlignmentType.CENTER }),
-        createCell("KUAT PERSONEL", 1160, { bold: true, alignment: AlignmentType.CENTER }),
+        createCell("NO", colWidths[0], { bold: true, alignment: AlignmentType.CENTER }),
+        createCell("JAM", colWidths[1], { bold: true, alignment: AlignmentType.CENTER }),
+        createCell("BENTUK KEGIATAN", colWidths[2], { bold: true, alignment: AlignmentType.CENTER }),
+        createCell("SASARAN", colWidths[3], { bold: true, alignment: AlignmentType.CENTER }),
+        createCell("HASIL YANG DICAPAI", colWidths[4], { bold: true, alignment: AlignmentType.CENTER }),
+        createCell("KUAT PERSONEL", colWidths[5], { bold: true, alignment: AlignmentType.CENTER }),
       ],
     });
 
     const dataRows = entry.kegiatan.map((k, idx) => new TableRow({
       children: [
-        createCell(String(idx + 1), 600, { alignment: AlignmentType.CENTER }),
-        createCell(k.jam, 1200, { alignment: AlignmentType.CENTER }),
-        createCell(idx === 0 ? entry.hari : "", 1000, { alignment: AlignmentType.CENTER }),
-        createCell(k.nama, 2400),
-        createCell(k.sasaran, 1800),
-        createCell(k.hasil, 2200),
-        createCell(k.personel, 1160, { alignment: AlignmentType.CENTER }),
+        createCell(String(idx + 1), colWidths[0], { alignment: AlignmentType.CENTER }),
+        createCell(k.jam, colWidths[1], { alignment: AlignmentType.CENTER }),
+        createCell(k.nama, colWidths[2]),
+        createCell(k.sasaran, colWidths[3]),
+        createCell(k.hasil, colWidths[4]),
+        createCell(k.personel, colWidths[5], { alignment: AlignmentType.CENTER }),
       ],
     }));
 
     elements.push(new Table({
-      width: { size: 10360, type: WidthType.DXA },
-      columnWidths: [600, 1200, 1000, 2400, 1800, 2200, 1160],
+      width: { size: 10600, type: WidthType.DXA },
+      columnWidths: colWidths,
       rows: [headerRow, ...dataRows],
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) as any);
 
+    // --- TTD: Right-aligned ---
     elements.push(new Paragraph({ spacing: { before: 400 }, children: [] }));
-    elements.push(new Paragraph({
-      alignment: AlignmentType.RIGHT,
-      children: [new TextRun({ text: `Tolinggula, ${formatTanggal(entry.tanggal)}`, size: 22, font: "Arial" })],
-    }));
-    elements.push(new Paragraph({
-      alignment: AlignmentType.RIGHT,
-      spacing: { before: 40 },
-      children: [new TextRun({ text: settings.jabatan, size: 22, font: "Arial" })],
-    }));
-    elements.push(new Paragraph({ spacing: { before: 600 }, children: [] }));
-    elements.push(new Paragraph({
-      alignment: AlignmentType.RIGHT,
-      children: [new TextRun({ text: `${settings.pangkat} ${settings.nama}`, bold: true, underline: {}, size: 22, font: "Arial" })],
-    }));
-    elements.push(new Paragraph({
-      alignment: AlignmentType.RIGHT,
-      spacing: { before: 40 },
-      children: [new TextRun({ text: `NRP. ${settings.nrp}`, size: 20, font: "Arial" })],
-    }));
+
+    // Use a table with invisible borders to push TTD to the right
+    const ttdWidth = 4000;
+    const spacerWidth = 10600 - ttdWidth;
+
+    const ttdTable = new Table({
+      width: { size: 10600, type: WidthType.DXA },
+      columnWidths: [spacerWidth, ttdWidth],
+      rows: [new TableRow({
+        children: [
+          new TableCell({
+            borders: noBorders,
+            width: { size: spacerWidth, type: WidthType.DXA },
+            children: [new Paragraph({ children: [] })],
+          }),
+          new TableCell({
+            borders: noBorders,
+            width: { size: ttdWidth, type: WidthType.DXA },
+            children: [
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [new TextRun({ text: `Tolinggula, ${formatTanggal(entry.tanggal)}`, size: 22, font: "Arial" })],
+              }),
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 40 },
+                children: [new TextRun({ text: settings.jabatan, size: 22, font: "Arial" })],
+              }),
+              new Paragraph({ spacing: { before: 600 }, children: [] }),
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [new TextRun({ text: `${settings.pangkat} ${settings.nama}`, bold: true, underline: {}, size: 22, font: "Arial" })],
+              }),
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 40 },
+                children: [new TextRun({ text: `NRP. ${settings.nrp}`, size: 20, font: "Arial" })],
+              }),
+            ],
+          }),
+        ],
+      })],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    }) as any;
+
+    elements.push(ttdTable);
 
     if (!isLast) {
       elements.push(new Paragraph({ children: [new PageBreak()] }));
