@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Trash2, FileText, Download } from "lucide-react";
 import type { DailyEntry } from "@/lib/reportGenerator";
 
@@ -18,21 +17,6 @@ interface PreviewTableProps {
 export function PreviewTable({ entries, setEntries, onExport }: PreviewTableProps) {
   const handleDelete = (id: string) => {
     setEntries(entries.filter((e) => e.id !== id));
-  };
-
-  const handleEditKegiatan = (entryId: string, kegiatanIdx: number, field: string, value: string) => {
-    setEntries(
-      entries.map((e) =>
-        e.id === entryId
-          ? {
-              ...e,
-              kegiatan: e.kegiatan.map((k, i) =>
-                i === kegiatanIdx ? { ...k, [field]: value } : k
-              ),
-            }
-          : e
-      )
-    );
   };
 
   if (entries.length === 0) {
@@ -93,41 +77,11 @@ export function PreviewTable({ entries, setEntries, onExport }: PreviewTableProp
                         </td>
                       </>
                     )}
-                    <td className="border border-border px-1 py-0.5">
-                      <Input
-                        value={k.jam}
-                        onChange={(e) => handleEditKegiatan(entry.id, kIdx, "jam", e.target.value)}
-                        className="h-7 text-xs border-0 bg-transparent"
-                      />
-                    </td>
-                    <td className="border border-border px-1 py-0.5">
-                      <Input
-                        value={k.nama}
-                        onChange={(e) => handleEditKegiatan(entry.id, kIdx, "nama", e.target.value)}
-                        className="h-7 text-xs border-0 bg-transparent"
-                      />
-                    </td>
-                    <td className="border border-border px-1 py-0.5">
-                      <Input
-                        value={k.sasaran}
-                        onChange={(e) => handleEditKegiatan(entry.id, kIdx, "sasaran", e.target.value)}
-                        className="h-7 text-xs border-0 bg-transparent"
-                      />
-                    </td>
-                    <td className="border border-border px-1 py-0.5">
-                      <Input
-                        value={k.hasil}
-                        onChange={(e) => handleEditKegiatan(entry.id, kIdx, "hasil", e.target.value)}
-                        className="h-7 text-xs border-0 bg-transparent"
-                      />
-                    </td>
-                    <td className="border border-border px-1 py-0.5">
-                      <Input
-                        value={k.personel}
-                        onChange={(e) => handleEditKegiatan(entry.id, kIdx, "personel", e.target.value)}
-                        className="h-7 text-xs border-0 bg-transparent"
-                      />
-                    </td>
+                    <td className="border border-border px-3 py-1.5 text-xs">{k.jam}</td>
+                    <td className="border border-border px-3 py-1.5 text-xs">{k.nama}</td>
+                    <td className="border border-border px-3 py-1.5 text-xs">{k.sasaran}</td>
+                    <td className="border border-border px-3 py-1.5 text-xs">{k.hasil}</td>
+                    <td className="border border-border px-3 py-1.5 text-xs">{k.personel}</td>
                     {kIdx === 0 && (
                       <td className="border border-border px-1 py-0.5 text-center" rowSpan={entry.kegiatan.length}>
                         <Button

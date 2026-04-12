@@ -23,6 +23,14 @@ interface SettingsPanelProps {
   setJabatanList: (v: string[]) => void;
   selectedJabatan: string;
   setSelectedJabatan: (v: string) => void;
+  pangkatList: string[];
+  setPangkatList: (v: string[]) => void;
+  selectedPangkat: string;
+  setSelectedPangkat: (v: string) => void;
+  nrpList: string[];
+  setNrpList: (v: string[]) => void;
+  selectedNrp: string;
+  setSelectedNrp: (v: string) => void;
   namaList: string[];
   setNamaList: (v: string[]) => void;
   selectedNama: string;
@@ -35,17 +43,19 @@ function DropdownWithAdd({
   setItems,
   selected,
   setSelected,
+  uppercase = true,
 }: {
   label: string;
   items: string[];
   setItems: (v: string[]) => void;
   selected: string;
   setSelected: (v: string) => void;
+  uppercase?: boolean;
 }) {
   const [newItem, setNewItem] = useState("");
 
   const handleAdd = () => {
-    const trimmed = newItem.trim().toUpperCase();
+    const trimmed = uppercase ? newItem.trim().toUpperCase() : newItem.trim();
     if (trimmed && !items.includes(trimmed)) {
       const updated = [...items, trimmed];
       setItems(updated);
@@ -70,9 +80,7 @@ function DropdownWithAdd({
         <SelectContent>
           {items.map((item) => (
             <SelectItem key={item} value={item}>
-              <span className="flex items-center justify-between w-full gap-2">
-                {item}
-              </span>
+              {item}
             </SelectItem>
           ))}
         </SelectContent>
@@ -89,7 +97,7 @@ function DropdownWithAdd({
           <Plus className="h-4 w-4" />
         </Button>
       </div>
-      {items.length > 1 && (
+      {items.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {items.map((item) => (
             <span key={item} className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
@@ -105,6 +113,8 @@ function DropdownWithAdd({
   );
 }
 
+export { DropdownWithAdd };
+
 export function SettingsPanel(props: SettingsPanelProps) {
   return (
     <Card>
@@ -114,42 +124,63 @@ export function SettingsPanel(props: SettingsPanelProps) {
           Pengaturan Data
         </CardTitle>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <DropdownWithAdd
-          label="Resor"
-          items={props.resorList}
-          setItems={props.setResorList}
-          selected={props.selectedResor}
-          setSelected={props.setSelectedResor}
-        />
-        <DropdownWithAdd
-          label="Sektor"
-          items={props.sektorList}
-          setItems={props.setSektorList}
-          selected={props.selectedSektor}
-          setSelected={props.setSelectedSektor}
-        />
-        <DropdownWithAdd
-          label="Unit Kerja"
-          items={props.unitKerjaList}
-          setItems={props.setUnitKerjaList}
-          selected={props.selectedUnitKerja}
-          setSelected={props.setSelectedUnitKerja}
-        />
-        <DropdownWithAdd
-          label="Jabatan Pejabat TTD"
-          items={props.jabatanList}
-          setItems={props.setJabatanList}
-          selected={props.selectedJabatan}
-          setSelected={props.setSelectedJabatan}
-        />
-        <DropdownWithAdd
-          label="Nama Pejabat TTD"
-          items={props.namaList}
-          setItems={props.setNamaList}
-          selected={props.selectedNama}
-          setSelected={props.setSelectedNama}
-        />
+      <CardContent>
+        <h3 className="text-sm font-semibold text-muted-foreground mb-3">Kop Surat</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+          <DropdownWithAdd
+            label="Resor"
+            items={props.resorList}
+            setItems={props.setResorList}
+            selected={props.selectedResor}
+            setSelected={props.setSelectedResor}
+          />
+          <DropdownWithAdd
+            label="Sektor"
+            items={props.sektorList}
+            setItems={props.setSektorList}
+            selected={props.selectedSektor}
+            setSelected={props.setSelectedSektor}
+          />
+          <DropdownWithAdd
+            label="Unit Kerja"
+            items={props.unitKerjaList}
+            setItems={props.setUnitKerjaList}
+            selected={props.selectedUnitKerja}
+            setSelected={props.setSelectedUnitKerja}
+          />
+        </div>
+        <h3 className="text-sm font-semibold text-muted-foreground mb-3">Pejabat Tanda Tangan</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <DropdownWithAdd
+            label="Jabatan"
+            items={props.jabatanList}
+            setItems={props.setJabatanList}
+            selected={props.selectedJabatan}
+            setSelected={props.setSelectedJabatan}
+          />
+          <DropdownWithAdd
+            label="Pangkat"
+            items={props.pangkatList}
+            setItems={props.setPangkatList}
+            selected={props.selectedPangkat}
+            setSelected={props.setSelectedPangkat}
+          />
+          <DropdownWithAdd
+            label="Nama"
+            items={props.namaList}
+            setItems={props.setNamaList}
+            selected={props.selectedNama}
+            setSelected={props.setSelectedNama}
+          />
+          <DropdownWithAdd
+            label="NRP"
+            items={props.nrpList}
+            setItems={props.setNrpList}
+            selected={props.selectedNrp}
+            setSelected={props.setSelectedNrp}
+            uppercase={false}
+          />
+        </div>
       </CardContent>
     </Card>
   );
