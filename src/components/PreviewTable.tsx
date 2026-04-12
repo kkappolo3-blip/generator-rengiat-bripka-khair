@@ -1,6 +1,7 @@
+import { useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, FileText, Download } from "lucide-react";
+import { Trash2, FileText, Download, Undo2 } from "lucide-react";
 import type { DailyEntry } from "@/lib/reportGenerator";
 
 const BULAN_NAMES = [
@@ -15,9 +16,19 @@ interface PreviewTableProps {
 }
 
 export function PreviewTable({ entries, setEntries, onExport }: PreviewTableProps) {
-  const handleDelete = (id: string) => {
+  const [history, setHistory] = useState<DailyEntry[][]>([]);
+
+  const handleDelete = useCallback((id: string) => {
+    setHistory((prev) => [...prev, entries]);
     setEntries(entries.filter((e) => e.id !== id));
-  };
+  }, [entries, setEntries]);
+
+  const handleUndo = useCallback(() => {
+    if (history.length === 0) return;
+    const prev = history[history.length - 1];
+    setHistory((h) => h.slice(0, -1));
+    setEntries(prev);
+  }, [history, setEntries]);
 
   if (entries.length === 0) {
     return (
@@ -40,10 +51,18 @@ export function PreviewTable({ entries, setEntries, onExport }: PreviewTableProp
           <FileText className="h-5 w-5 text-primary" />
           Preview: {BULAN_NAMES[month]} {year} ({entries.length} hari)
         </CardTitle>
-        <Button onClick={onExport} className="gap-2">
-          <Download className="h-4 w-4" />
-          Download Word
-        </Button>
+        <div className="flex items-center gap-2">
+          {history.length > 0 && (
+            <Button variant="outline" size="sm" onClick={handleUndo} className="gap-1.5">
+              <Undo2 className="h-4 w-4" />
+              Undo
+            </Button>
+          )}
+          <Button onClick={onExport} className="gap-2">
+            <Download className="h-4 w-4" />
+            Download Word
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
