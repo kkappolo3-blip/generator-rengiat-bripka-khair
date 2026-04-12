@@ -7,9 +7,11 @@ import { Label } from "@/components/ui/label";
 import { CalendarDays, Zap, Shield } from "lucide-react";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { PreviewTable } from "@/components/PreviewTable";
+import { ActivityManager } from "@/components/ActivityManager";
 import { useLocalStorage } from "@/lib/useLocalStorage";
 import { generateMonthlyData, type DailyEntry } from "@/lib/reportGenerator";
 import { exportToDocx } from "@/lib/exportDocx";
+import { DEFAULT_ACTIVITIES, type Activity } from "@/lib/activityDatabase";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -43,8 +45,15 @@ function Index() {
   const [selectedUnitKerja, setSelectedUnitKerja] = useLocalStorage("selectedUnitKerja", "POLSEK TOLINGGULA");
   const [jabatanList, setJabatanList] = useLocalStorage("jabatanList", ["KANIT BINMAS"]);
   const [selectedJabatan, setSelectedJabatan] = useLocalStorage("selectedJabatan", "KANIT BINMAS");
+  const [pangkatList, setPangkatList] = useLocalStorage("pangkatList", ["BRIPKA"]);
+  const [selectedPangkat, setSelectedPangkat] = useLocalStorage("selectedPangkat", "BRIPKA");
+  const [nrpList, setNrpList] = useLocalStorage("nrpList", ["12345678"]);
+  const [selectedNrp, setSelectedNrp] = useLocalStorage("selectedNrp", "12345678");
   const [namaList, setNamaList] = useLocalStorage("namaList", ["MOHAMAD KHAIR"]);
   const [selectedNama, setSelectedNama] = useLocalStorage("selectedNama", "MOHAMAD KHAIR");
+
+  // Activity database
+  const [activities, setActivities] = useLocalStorage<Activity[]>("activityDatabase", DEFAULT_ACTIVITIES);
 
   // Generator state
   const [bulan, setBulan] = useState(String(new Date().getMonth() + 1));
@@ -52,7 +61,7 @@ function Index() {
   const [entries, setEntries] = useState<DailyEntry[]>([]);
 
   const handleGenerate = () => {
-    const data = generateMonthlyData(Number(bulan), Number(tahun));
+    const data = generateMonthlyData(Number(bulan), Number(tahun), activities);
     setEntries(data);
   };
 
@@ -63,13 +72,14 @@ function Index() {
       sektor: selectedSektor,
       unitKerja: selectedUnitKerja,
       jabatan: selectedJabatan,
+      pangkat: selectedPangkat,
+      nrp: selectedNrp,
       nama: selectedNama,
     });
   };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="mx-auto max-w-7xl px-4 py-6">
           <div className="flex items-center gap-3">
@@ -85,7 +95,6 @@ function Index() {
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-6 space-y-6">
-        {/* Settings */}
         <SettingsPanel
           resorList={resorList} setResorList={setResorList}
           selectedResor={selectedResor} setSelectedResor={setSelectedResor}
@@ -95,11 +104,16 @@ function Index() {
           selectedUnitKerja={selectedUnitKerja} setSelectedUnitKerja={setSelectedUnitKerja}
           jabatanList={jabatanList} setJabatanList={setJabatanList}
           selectedJabatan={selectedJabatan} setSelectedJabatan={setSelectedJabatan}
+          pangkatList={pangkatList} setPangkatList={setPangkatList}
+          selectedPangkat={selectedPangkat} setSelectedPangkat={setSelectedPangkat}
+          nrpList={nrpList} setNrpList={setNrpList}
+          selectedNrp={selectedNrp} setSelectedNrp={setSelectedNrp}
           namaList={namaList} setNamaList={setNamaList}
           selectedNama={selectedNama} setSelectedNama={setSelectedNama}
         />
 
-        {/* Generator */}
+        <ActivityManager activities={activities} setActivities={setActivities} />
+
         <Card>
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2 text-lg">
@@ -143,7 +157,6 @@ function Index() {
           </CardContent>
         </Card>
 
-        {/* Preview */}
         <PreviewTable entries={entries} setEntries={setEntries} onExport={handleExport} />
       </main>
     </div>

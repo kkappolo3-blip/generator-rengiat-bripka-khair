@@ -13,7 +13,7 @@ export const MANDATORY_ACTIVITY: Activity & { jam: string } = {
   personel: "15 Orang",
 };
 
-export const ACTIVITY_DATABASE: Activity[] = [
+export const DEFAULT_ACTIVITIES: Activity[] = [
   { nama: "Sambang Tokoh Masyarakat", sasaran: "Tokoh Masyarakat Desa", hasil: "Terjalinnya sinergitas antara Polri dan tokoh masyarakat", personel: "1 Orang" },
   { nama: "Pembinaan Pengamanan Swakarsa", sasaran: "Petugas Satpam/Linmas", hasil: "Meningkatnya kemampuan teknis pengamanan swakarsa", personel: "1 Orang" },
   { nama: "Sosialisasi Bahaya Narkoba", sasaran: "Remaja/Karang Taruna", hasil: "Tumbuhnya kesadaran masyarakat akan bahaya narkoba", personel: "1 Orang" },
@@ -34,7 +34,7 @@ export const ACTIVITY_DATABASE: Activity[] = [
   { nama: "Koordinasi dengan Babinsa", sasaran: "Babinsa Wilayah", hasil: "Sinkronisasi program kamtibmas dan hankam", personel: "1 Orang" },
 ];
 
-export function getRandomActivities(count: number): Activity[] {
-  const shuffled = [...ACTIVITY_DATABASE].sort(() => Math.random() - 0.5);
+export function getRandomActivities(count: number, pool: Activity[]): Activity[] {
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, count);
 }
