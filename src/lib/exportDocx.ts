@@ -1,8 +1,9 @@
 import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
-  AlignmentType, WidthType, BorderStyle, PageBreak, HeadingLevel,
+  AlignmentType, WidthType, BorderStyle, PageBreak,
 } from "docx";
-import { saveAs } from "file-saver";
+import pkg from "file-saver";
+const { saveAs } = pkg;
 import type { DailyEntry } from "./reportGenerator";
 
 interface ExportSettings {
@@ -139,9 +140,7 @@ export async function exportToDocx(entries: DailyEntry[], settings: ExportSettin
     }],
   });
 
-  const buffer = await Packer.toBuffer(doc);
-  const uint8 = new Uint8Array(buffer);
-  const blob = new Blob([uint8], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+  const blob = await Packer.toBlob(doc);
   const month = entries[0].tanggal.getMonth() + 1;
   const year = entries[0].tanggal.getFullYear();
   saveAs(blob, `Laporan_Kegiatan_Harian_${BULAN_NAMES[month]}_${year}.docx`);
