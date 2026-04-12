@@ -120,7 +120,9 @@ export async function exportToDocx(entries: DailyEntry[], settings: ExportSettin
     }));
 
     // --- TABEL (tanpa kolom HARI) ---
-    const colWidths = [600, 1400, 2800, 2200, 2400, 1200];
+    // F4 landscape content width: 18720 - 720 - 720 = 17280 DXA
+    const totalWidth = 17280;
+    const colWidths = [700, 1600, 4500, 3200, 4800, 2480];
     const headerRow = new TableRow({
       children: [
         createCell("NO", colWidths[0], { bold: true, alignment: AlignmentType.CENTER }),
@@ -132,7 +134,10 @@ export async function exportToDocx(entries: DailyEntry[], settings: ExportSettin
       ],
     });
 
-    const dataRows = entry.kegiatan.map((k, idx) => new TableRow({
+    // Sort kegiatan by jam (time) ascending
+    const sortedKegiatan = [...entry.kegiatan].sort((a, b) => a.jam.localeCompare(b.jam));
+
+    const dataRows = sortedKegiatan.map((k, idx) => new TableRow({
       children: [
         createCell(String(idx + 1), colWidths[0], { alignment: AlignmentType.CENTER }),
         createCell(k.jam, colWidths[1], { alignment: AlignmentType.CENTER }),
@@ -144,7 +149,7 @@ export async function exportToDocx(entries: DailyEntry[], settings: ExportSettin
     }));
 
     elements.push(new Table({
-      width: { size: 10600, type: WidthType.DXA },
+      width: { size: totalWidth, type: WidthType.DXA },
       columnWidths: colWidths,
       rows: [headerRow, ...dataRows],
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -154,11 +159,11 @@ export async function exportToDocx(entries: DailyEntry[], settings: ExportSettin
     elements.push(new Paragraph({ spacing: { before: 400 }, children: [] }));
 
     // Use a table with invisible borders to push TTD to the right
-    const ttdWidth = 4000;
-    const spacerWidth = 10600 - ttdWidth;
+    const ttdWidth = 5000;
+    const spacerWidth = totalWidth - ttdWidth;
 
     const ttdTable = new Table({
-      width: { size: 10600, type: WidthType.DXA },
+      width: { size: totalWidth, type: WidthType.DXA },
       columnWidths: [spacerWidth, ttdWidth],
       rows: [new TableRow({
         children: [
@@ -183,12 +188,12 @@ export async function exportToDocx(entries: DailyEntry[], settings: ExportSettin
               new Paragraph({ spacing: { before: 600 }, children: [] }),
               new Paragraph({
                 alignment: AlignmentType.CENTER,
-                children: [new TextRun({ text: `${settings.pangkat} ${settings.nama}`, bold: true, underline: {}, size: 22, font: "Arial" })],
+                children: [new TextRun({ text: settings.nama, bold: true, underline: {}, size: 22, font: "Arial" })],
               }),
               new Paragraph({
                 alignment: AlignmentType.CENTER,
                 spacing: { before: 40 },
-                children: [new TextRun({ text: `NRP. ${settings.nrp}`, size: 20, font: "Arial" })],
+                children: [new TextRun({ text: `${settings.pangkat} NRP ${settings.nrp}`, size: 20, font: "Arial" })],
               }),
             ],
           }),
@@ -216,7 +221,8 @@ export async function exportToDocx(entries: DailyEntry[], settings: ExportSettin
     sections: [{
       properties: {
         page: {
-          size: { width: 15840, height: 12240, orientation: undefined },
+          // F4 landscape: 8.5" x 13" → 12240 x 18720 DXA
+          size: { width: 12240, height: 18720, orientation: undefined },
           margin: { top: 720, right: 720, bottom: 720, left: 720 },
         },
       },
