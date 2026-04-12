@@ -140,7 +140,8 @@ export async function exportToDocx(entries: DailyEntry[], settings: ExportSettin
   });
 
   const buffer = await Packer.toBuffer(doc);
-  const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+  const uint8 = new Uint8Array(buffer);
+  const blob = new Blob([uint8], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
   const month = entries[0].tanggal.getMonth() + 1;
   const year = entries[0].tanggal.getFullYear();
   saveAs(blob, `Laporan_Kegiatan_Harian_${BULAN_NAMES[month]}_${year}.docx`);
