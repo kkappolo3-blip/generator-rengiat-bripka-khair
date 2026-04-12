@@ -24,7 +24,7 @@ function getRandomJam(): string {
   return JAM_OPTIONS[Math.floor(Math.random() * JAM_OPTIONS.length)];
 }
 
-export function generateMonthlyData(month: number, year: number): DailyEntry[] {
+export function generateMonthlyData(month: number, year: number, activityPool: Activity[]): DailyEntry[] {
   const entries: DailyEntry[] = [];
   const daysInMonth = new Date(year, month, 0).getDate();
 
@@ -32,10 +32,9 @@ export function generateMonthlyData(month: number, year: number): DailyEntry[] {
     const date = new Date(year, month - 1, day);
     const dayOfWeek = date.getDay();
 
-    // Skip Saturday (6) and Sunday (0)
     if (dayOfWeek === 0 || dayOfWeek === 6) continue;
 
-    const randomActivities = getRandomActivities(3);
+    const randomActivities = getRandomActivities(3, activityPool);
     const usedJams = new Set<string>();
     
     const kegiatan = [

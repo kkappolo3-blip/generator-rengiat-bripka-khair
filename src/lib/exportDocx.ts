@@ -5,6 +5,8 @@ interface ExportSettings {
   sektor: string;
   unitKerja: string;
   jabatan: string;
+  pangkat: string;
+  nrp: string;
   nama: string;
 }
 
@@ -109,7 +111,12 @@ export async function exportToDocx(entries: DailyEntry[], settings: ExportSettin
     elements.push(new Paragraph({ spacing: { before: 600 }, children: [] }));
     elements.push(new Paragraph({
       alignment: AlignmentType.RIGHT,
-      children: [new TextRun({ text: settings.nama, bold: true, underline: {}, size: 22, font: "Arial" })],
+      children: [new TextRun({ text: `${settings.pangkat} ${settings.nama}`, bold: true, underline: {}, size: 22, font: "Arial" })],
+    }));
+    elements.push(new Paragraph({
+      alignment: AlignmentType.RIGHT,
+      spacing: { before: 40 },
+      children: [new TextRun({ text: `NRP. ${settings.nrp}`, size: 20, font: "Arial" })],
     }));
 
     if (!isLast) {
