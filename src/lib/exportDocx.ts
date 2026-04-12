@@ -57,25 +57,41 @@ export async function exportToDocx(entries: DailyEntry[], settings: ExportSettin
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const elements: any[] = [];
 
-    // --- KOP SURAT: Left-aligned with underline on longest text ---
+    // --- KOP SURAT: Top-left, centered text within a box, underline at bottom ---
     const kopLines = [
       "KEPOLISIAN NEGARA REPUBLIK INDONESIA",
       `RESOR ${settings.resor}`,
       `SEKTOR ${settings.sektor}`,
     ];
 
-    // Build kop as left-aligned paragraphs
-    for (let i = 0; i < kopLines.length; i++) {
-      const isLastKop = i === kopLines.length - 1;
-      elements.push(new Paragraph({
-        alignment: AlignmentType.LEFT,
-        spacing: { after: isLastKop ? 0 : 40 },
-        border: isLastKop ? {
-          bottom: { style: BorderStyle.SINGLE, size: 6, color: "000000", space: 1 },
-        } : undefined,
-        children: [new TextRun({ text: kopLines[i], bold: true, size: 24, font: "Arial" })],
-      }));
-    }
+    // Use a table to position kop at top-left with centered text inside
+    const kopWidth = 5800; // Width enough for longest kop text
+    const kopParagraphs = kopLines.map((line, i) => new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: i === kopLines.length - 1 ? 0 : 20 },
+      children: [new TextRun({ text: line, bold: true, size: 24, font: "Arial" })],
+    }));
+
+    const kopBottomBorder = { style: BorderStyle.SINGLE, size: 6, color: "000000" };
+    const kopTable = new Table({
+      width: { size: kopWidth, type: WidthType.DXA },
+      columnWidths: [kopWidth],
+      rows: [new TableRow({
+        children: [
+          new TableCell({
+            borders: {
+              top: noBorder, left: noBorder, right: noBorder,
+              bottom: kopBottomBorder,
+            },
+            width: { size: kopWidth, type: WidthType.DXA },
+            children: kopParagraphs,
+          }),
+        ],
+      })],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    }) as any;
+
+    elements.push(kopTable);
 
     elements.push(new Paragraph({ spacing: { after: 120 }, children: [] }));
 
