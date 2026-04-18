@@ -8,6 +8,7 @@ import { CalendarDays, Zap, Shield } from "lucide-react";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { PreviewTable } from "@/components/PreviewTable";
 import { ActivityManager } from "@/components/ActivityManager";
+import { CloudSyncPanel } from "@/components/CloudSyncPanel";
 import { useLocalStorage } from "@/lib/useLocalStorage";
 import { generateMonthlyData, type DailyEntry } from "@/lib/reportGenerator";
 import { exportToDocx } from "@/lib/exportDocx";
