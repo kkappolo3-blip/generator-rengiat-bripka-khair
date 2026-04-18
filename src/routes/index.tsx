@@ -96,6 +96,8 @@ function Index() {
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-6 space-y-6">
+        <CloudSyncPanel />
+
         <SettingsPanel
           resorList={resorList} setResorList={setResorList}
           selectedResor={selectedResor} setSelectedResor={setSelectedResor}
